@@ -3,10 +3,19 @@ import os
 from functions.get_files_content import get_file_content
 
 def main():
+    try: 
+        content = get_file_content("calculator", "main.py")
+        content2 = get_file_content("calculator", "pkg/calculator.py")
+        content3 = get_file_content("calculator", "/bin/cat")
+        content4 = get_file_content("calculator", "pkg/does_not_exist.py")
 
-    content = get_file_content("calculator", "lorem.txt")
+        print(f"{content}")
+        print(f"{content2}") 
+        print(f"{content3}") 
+        print(f"{content4}") 
 
-    print(f"is this workign? {content}")
+    except Exception as e:
+        print(f"Error: {e}")
 
 
 if __name__ == "__main__":
