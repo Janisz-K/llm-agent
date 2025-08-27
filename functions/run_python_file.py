@@ -21,9 +21,9 @@ schema_run_python_file = types.FunctionDeclaration(
 )
 
 
-def run_python_file(working_dir, file_path, args=[]):
+def run_python_file(working_directory, file_path, args=[]):
 
-    project_path = os.path.abspath(working_dir)
+    project_path = os.path.abspath(working_directory)
     project_path_list = project_path.split(os.path.sep)
     item_path = os.path.join(project_path, file_path)
     item_path_abs = os.path.abspath(item_path)

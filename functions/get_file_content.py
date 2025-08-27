@@ -16,12 +16,12 @@ schema_get_file_content = types.FunctionDeclaration(
     ),
 )
 
-def get_file_content(working_dir, file_path):
+def get_file_content(working_directory, file_path):
 
-    print(f"get file content: working dir {working_dir}, filepath {file_path}")
+    print(f"get file content: working dir {working_directory}, filepath {file_path}")
 
     try: 
-        project_path = os.path.abspath(working_dir)
+        project_path = os.path.abspath(working_directory)
         project_path_list = project_path.split(os.path.sep)
         item_path = os.path.join(project_path, file_path)
         item_path_abs = os.path.abspath(item_path)
