@@ -69,7 +69,10 @@ def main():
     args = sys.argv[1:]
 
     if not args:
-        raise Exception ("No prompt provided")
+        print("AI Code Assistant")
+        print('\nUsage: python main.py "your prompt here" [--verbose]')
+        print('Example: python main.py "How do I fix the calculator?"')
+        sys.exit(1)
     
     cmd_verbose = False
 
@@ -77,32 +80,51 @@ def main():
         if arg == "--verbose":
             cmd_verbose = True
 
-
+    loop_times = 0
     messages = [ types.Content(role="user", parts = [types.Part(text=args[0])])]
-    response = client.models.generate_content(
-            model="gemini-2.0-flash-001",    
-            contents=messages,
-            config=types.GenerateContentConfig(tools=[available_functions],system_instruction=SYSTEM_PROMPT),)
-    
-    prompt_token = response.usage_metadata.prompt_token_count
-    response_token = response.usage_metadata.candidates_token_count
 
-    if response.text:
-        print(response.text)
-    
-    if response.function_calls:
-        for function_call_part in response.function_calls:
-            func_return = call_function(function_call_part, cmd_verbose)
-            #print(f"Calling function: {function_call_part.name}({function_call_part.args})")
-            if not func_return.parts[0]:
-                raise Exception ("Fatal Error")
-            if cmd_verbose:
-                print(f"-> {func_return.parts[0].function_response.response}")
+    while loop_times < 21:
+        loop_times += 1
+        response = client.models.generate_content(
+                model="gemini-2.0-flash-001",    
+                contents=messages,
+                config=types.GenerateContentConfig(tools=[available_functions],system_instruction=SYSTEM_PROMPT),)
+        
+        for candidate in response.candidates:
+            messages.append(candidate.content)
+        
+        prompt_token = response.usage_metadata.prompt_token_count
+        response_token = response.usage_metadata.candidates_token_count
+        
 
-    #if cmd_verbose:
-    #    print(f"User prompt: {args[0]}")
-    #    print(f"Prompt tokens: {prompt_token}")
-    #    print(f"Response tokens: {response_token}")
+        
+        function_responses = []
+        if response.function_calls:
+            for function_call_part in response.function_calls:
+                func_return = call_function(function_call_part, cmd_verbose)
+                if not func_return.parts[0]:
+                    raise Exception ("Fatal Error")
+                if cmd_verbose:
+                    print(f"-> {func_return.parts[0].function_response.response}")
+                function_responses.append(func_return.parts[0])
+            messages.append(types.Content(role = "user", parts = function_responses))
+
+            if not function_responses:
+                raise Exception("no function responses generated, exiting.")
+            continue
+        
+        elif response.text:
+            print("Final response:")
+            print(response.text)
+            break
+        else:
+            raise Exception("Response has neither function calls nor text")
+
+
+    if cmd_verbose:
+        print(f"User prompt: {args[0]}")
+        print(f"Prompt tokens: {prompt_token}")
+        print(f"Response tokens: {response_token}")
 
 if __name__ == "__main__":
     main()
